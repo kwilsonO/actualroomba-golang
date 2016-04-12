@@ -9,42 +9,54 @@ import (
 	"errors"
 )
 
+//Room dimensions
+var Dx, Dy int
 
-var allDirt map[string]int
-var allPos  []string
-var Rx, Ry, Dx, Dy int
-var source *Vertex
-var dirs string
-
-
+//quick struct to avoid tons of string manipulation
 type Vertex struct{
 	X, Y int
 }
 
 func main() {
 
+	//double check filepath arg coming in
 	if len(os.Args) != 2 {
-		fmt.Println("Send a file path noob")
+		fmt.Println("Please send a filepath arg")
+		return
 	}
-
+	//begin parsing of file
 	lines, err := ParseLines(os.Args[1], func(s string)(string,bool){
 		return s, true
 	})
 
-	if err != nil {
-		fmt.Println("you're file format sucks", err);
+	//check file at least has dimensions, start pos, and directions
+	if len(lines) < 3 {
+		fmt.Println("Not enough lines in input, try again.")
 		return
 	}
+
+	//failed parsing file
+	if err != nil {
+		fmt.Println("Invalid file format please see example", err);
+		return
+	}
+
+	//vars
 	var s []string
-	allDirt = make(map[string]int)
+	var dirs string
+	var source *Vertex
+	allDirt := make(map[string]int)
+
+	//loop through each line of the file
 	for i, l := range lines {
 
+		//if the last line of the file then directions
 		if i == (len(lines) - 1) {
 			dirs = l
 			continue
 		}
 
-		//Room Dimensions
+		//if either room dimensions or start pos
 		if i <= 1 {
 			s = strings.Split(l, " ")
 
@@ -52,56 +64,61 @@ func main() {
 			y, err := strconv.Atoi(s[1])
 
 			if err != nil {
-				fmt.Println("really can't even type integers")
+				fmt.Println("Line format not as expected try 'INT INT'")
 				return
 			}
+			//if room dimensions
 			if i == 0 {
 				Dx = x;
 				Dy = y;
 				continue
 			}
+
+			//if start pos
 			if i == 1 {
-				Rx = x
-				Ry = y;
 				source = &Vertex{X: x, Y: y}
 				continue
 			}
 		}
 
+		//otherwise it's a dirt spot
 		allDirt[l]= 1;
 	}
 
-	ParseDirs(source, dirs)
+	//do the necessary calcs to find paths
+	allPos := ParseDirs(source, dirs)
 
+	//final pos is always the last pos in all pos
 	finalPos := allPos[len(allPos) - 1]
-	numDirtCleaned := GetCleanedCount()
 
+	//go find how many of allPos are present in allDirt map
+	numDirtCleaned := GetCleanedCount(allPos, allDirt)
+
+
+	//print final pos and cleaned count
 	fmt.Printf("%s\n", finalPos)
-	fmt.Printf("Cleaned: %d\n", numDirtCleaned)
+	fmt.Printf("%d\n", numDirtCleaned)
 
 }
 
-func GetCleanedCount() int {
+func GetCleanedCount(allPos []string, allDirt map[string]int) int {
 
 	count := 0
 	for _, v := range allPos {
-		if allDirt[v] == 1 {
+		if _, ok := allDirt[v]; ok {
+			//make sure we don't double up
+			delete(allDirt, v)
 			count++
 		}
 	}
 
 	return count
-
 }
 
-func IsSamePoint(v, u *Vertex) bool{
-
-	return (v.X == u.X) && (v.Y == u.Y)
-}
-
-func ParseDirs(source *Vertex, dirs string){
+func ParseDirs(source *Vertex, dirs string) []string{
 
 	last := source
+	var allPos []string
 	for i := 0; i < len(dirs); i++ {
 		last = MoveRoomba(last, dirs[i])
 		//if out of bounds don't add no use to waste time checkign
@@ -109,6 +126,7 @@ func ParseDirs(source *Vertex, dirs string){
 			allPos = append(allPos, fmt.Sprintf("%d %d", last.X, last.Y))
 		}
 	}
+	return allPos
 }
 
 func CheckPos(v *Vertex) (*Vertex, error) {
