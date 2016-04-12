@@ -31,7 +31,7 @@ func main() {
 
 	//failed parsing file
 	if err != nil {
-		fmt.Println("Invalid file format please see example", err);
+		fmt.Println("Parsing failed", err);
 		return
 	}
 	//check file at least has dimensions, start pos, and directions
