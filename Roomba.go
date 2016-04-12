@@ -29,17 +29,27 @@ func main() {
 		return s, true
 	})
 
+	//failed parsing file
+	if err != nil {
+		fmt.Println("Invalid file format please see example", err);
+		return
+	}
 	//check file at least has dimensions, start pos, and directions
 	if len(lines) < 3 {
 		fmt.Println("Not enough lines in input, try again.")
 		return
 	}
 
-	//failed parsing file
-	if err != nil {
-		fmt.Println("Invalid file format please see example", err);
-		return
-	}
+	//main program logic here
+	finalPos, numDirtCleaned := BuildPositionsAndCalculate(lines)
+
+	//print final pos and cleaned count
+	fmt.Printf("%s\n", finalPos)
+	fmt.Printf("%d\n", numDirtCleaned)
+
+}
+
+func BuildPositionsAndCalculate(lines []string) (string, int){
 
 	//vars
 	var s []string
@@ -65,7 +75,7 @@ func main() {
 
 			if err != nil {
 				fmt.Println("Line format not as expected try 'INT INT'")
-				return
+				return "", 0
 			}
 			//if room dimensions
 			if i == 0 {
@@ -99,12 +109,9 @@ func main() {
 	//go find how many of allPos are present in allDirt map
 	numDirtCleaned := GetCleanedCount(allPos, allDirt)
 
-
-	//print final pos and cleaned count
-	fmt.Printf("%s\n", finalPos)
-	fmt.Printf("%d\n", numDirtCleaned)
-
+	return finalPos, numDirtCleaned
 }
+
 
 func GetCleanedCount(allPos []string, allDirt map[string]int) int {
 
