@@ -88,8 +88,13 @@ func main() {
 	//do the necessary calcs to find paths
 	allPos := ParseDirs(source, dirs)
 
-	//final pos is always the last pos in all pos
-	finalPos := allPos[len(allPos) - 1]
+	var finalPos string
+	if len(allPos) > 0 {
+		//final pos is always the last pos in all pos
+		finalPos = allPos[len(allPos) - 1]
+	} else {
+		finalPos = fmt.Sprintf("%d %d", source.X, source.Y)
+	}
 
 	//go find how many of allPos are present in allDirt map
 	numDirtCleaned := GetCleanedCount(allPos, allDirt)
